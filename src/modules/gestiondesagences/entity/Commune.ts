@@ -6,6 +6,7 @@ import { Arrondissement } from "./Arrondissement";
 @Entity()
 export class Commune{
     @PrimaryGeneratedColumn()
+    
     id:number
 
     @Column({unique:true})

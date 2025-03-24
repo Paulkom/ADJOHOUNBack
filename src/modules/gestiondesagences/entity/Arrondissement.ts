@@ -8,6 +8,7 @@ import { User } from "../../gestiondesutilisateurs/entity/user.entity";
 export class Arrondissement{
     @PrimaryGeneratedColumn()
     id:number
+    
 
     @Column({nullable:true})
     @IsNotEmpty({ message:"Le code est obligatoire" })
