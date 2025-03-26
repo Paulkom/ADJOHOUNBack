@@ -2,20 +2,49 @@ import { Request, Response } from 'express';
 import { Parcelle } from '../entity/parcelle.entity';
 import { myDataSource } from '../../../configs/data-source';
 import { generateServerErrorCode, success, validateMessage } from '../../../configs/response';
-import { validate } from 'class-validator';
+import { validate, isArray } from 'class-validator';
+import { Usager } from '../entity/usager.entity';
 
 // Créer une nouvelle parcelle
 export const createParcelle = async (req: Request, res: Response) => {
   try {
     const parcelle = myDataSource.getRepository(Parcelle).create(req.body);
+    if (Array.isArray(parcelle)) {
+      throw new Error("Expected a single Parcelle object but received an array.");
+    }
     const errors = await validate(parcelle)
     if (errors.length > 0) {
       const message = validateMessage(errors);
       return generateServerErrorCode(res, 400, errors, message)
     }
-    await myDataSource.getRepository(Parcelle).save(parcelle);
+    var proprio = null;
+    var laParcelle = null;
+
+    const propioExist = await myDataSource.getRepository(Usager).findOne({where: {npi: req.body.cipProprietaire}});
+
+
+    await myDataSource.manager.transaction(async (transactionalEntityManager) => {
+      if(!propioExist){
+      const proprietaire = await transactionalEntityManager.getRepository(Usager).save({
+        nom: req.body.nomProprietaire,
+        npi: req.body.cipProprietaire ? req.body.cipProprietaire : null,
+        prenom: req.body.prenomsProprietaire,
+        numtel: req.body.telephoneProprietaire,
+      });
+      proprio = isArray(proprietaire) ? proprietaire[0] : proprietaire;
+    }else{
+      proprio = propioExist;
+    }
+      
+      (parcelle as Parcelle).proprietaire = proprio.id;
+      //parcelle.proprietaire = await transactionalEntityManager.getRepository(Usager).findOne({where: {id: proprietaire.id}});
+      laParcelle = await transactionalEntityManager.getRepository(Parcelle).save(parcelle);
+
+    })
+    
+    //await myDataSource.getRepository(Parcelle).save(parcelle);
     const message = `La parcelle ${req.body.numeroDossier} a bien été créée.`
-    return success(res, 201, parcelle, message);
+    return success(res, 201, laParcelle, message);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -32,7 +61,7 @@ export const getParcelles = async (req: Request, res: Response) => {
   try {
     var reque = myDataSource.getRepository(Parcelle)
       .createQueryBuilder('parcelle')
-      .leftJoinAndSelect('parcelle.quartier', 'quartier')
+      .leftJoinAndSelect('parcelle.village', 'quartier')
       .leftJoinAndSelect('parcelle.propretaire', 'propretaire')
       .leftJoinAndSelect('quartier.arrondissement', 'arrondissement')
       .leftJoinAndSelect('arrondissement.commune', 'commune')
@@ -48,6 +77,21 @@ export const getParcelles = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const recupererListeParcelles = async (req:Request, res:Response) => {
+  try {
+    const parcelles = await myDataSource.getRepository(Parcelle).find({relations: {
+      village: {
+        arrondissement:true,
+      },
+      proprietaire: true,
+    }});
+    const message = 'Liste des parcelles';
+    return success(res, 200, parcelles, message);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
 
 // Lire une parcelle par ID
 export const getParcelleById = async (req: Request, res: Response) => {

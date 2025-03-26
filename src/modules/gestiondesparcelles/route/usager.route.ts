@@ -1,12 +1,12 @@
 import * as express from 'express';
 import { listen } from '../../../configs/uploads';
-import { createUsager, deleteUsager, getAllUsager, getAllUsagers, getUsager, getUsagerBykey, updateUsager } from '../controller/usager.controller';
+import { createUsager, deleteUsager, getAllUsager, getAllUsagers, getUsager, getUsagerBykey, getUsagerByNpi, updateUsager } from '../controller/usager.controller';
 import { checkPermission } from '../../../middlewares/auth.middleware';
 
 export const usagers_routes = (router: express.Router) => {
 
   
-              
+  router.get('/api/get/usagers/by/:npi', getUsagerByNpi);
   router.post('/api/usagers', listen.fields([
     { name: "urlImage", maxCount: 1 },
     { name: "autreFichier[]", maxCount: 500 }

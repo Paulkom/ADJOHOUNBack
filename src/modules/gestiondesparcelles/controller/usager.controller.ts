@@ -138,6 +138,29 @@ export const getAllUsager = async (req: Request, res: Response) => {
         })
 };
 
+
+
+export const getUsagerByNpi = async (req: Request, res: Response) => {
+    try {
+        const { npi } = req.params;
+        const usager = await myDataSource.getRepository(Usager)
+        .createQueryBuilder("usager")
+        .where("usager.npi = :npi", { npi })
+        .andWhere("usager.npi IS NOT NULL")
+        .getOne();
+
+        if (!usager) {
+            const message = `Aucun usager trouvé avec le NPI fourni.`;
+            return generateServerErrorCode(res, 404, "NPI introuvable", message);
+        }
+
+        const message = `Usager trouvé avec succès.`;
+        return success(res, 200, usager, message);
+    } catch (error) {
+        const message = `Une erreur est survenue lors de la recherche de l'usager par NPI.`;
+        return generateServerErrorCode(res, 500, error, message);
+    }
+};
 export const getAllUsagers = async (req: Request, res: Response) => {
     const { page, limit, searchTerm, startIndex, searchQueries } = paginationAndRechercheInit(req, Usager);
     try {

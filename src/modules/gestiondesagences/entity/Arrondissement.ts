@@ -9,7 +9,6 @@ export class Arrondissement{
     @PrimaryGeneratedColumn()
     id:number
     
-
     @Column({nullable:true})
     @IsNotEmpty({ message:"Le code est obligatoire" })
     code:string

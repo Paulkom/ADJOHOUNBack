@@ -119,6 +119,21 @@ export const getArrondissementByCommune = async (req: Request, res: Response) =>
         return generateServerErrorCode(res,500,error,message)
     })
 };
+export const getArrondissements = async (req: Request, res: Response) => {
+    await myDataSource.getRepository(Arrondissement)
+    .createQueryBuilder("arrondissement")
+    .leftJoinAndSelect("arrondissement.commune", "commune")
+    .orderBy("arrondissement.libelle", "ASC")
+    .getMany()
+    .then(communes => {
+        const message = `La liste des communes a bien été récupérée.`;
+        return success(res, 200, communes, message);
+    })
+    .catch(error => {
+        const message = `La liste des communes n'a pas pu être récupérée. Réessayez dans quelques instants.`;
+        return generateServerErrorCode(res, 500, error, message);
+    });
+};
 
 
 export const updateArrondissement = async (req: Request, res: Response) => {
