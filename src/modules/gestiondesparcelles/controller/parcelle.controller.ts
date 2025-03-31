@@ -46,6 +46,7 @@ export const createParcelle = async (req: Request, res: Response) => {
     const message = `La parcelle ${req.body.numeroDossier} a bien été créée.`
     return success(res, 201, laParcelle, message);
   } catch (error) {
+    console.log("Erreur ===> ", error);
     res.status(400).json({ message: error.message });
   }
 };
