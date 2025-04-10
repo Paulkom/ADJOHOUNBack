@@ -328,3 +328,25 @@ export const deleteUsager = async (req: Request, res: Response) => {
             return generateServerErrorCode(res, 500, error, message)
         })
 }
+
+export const usagerInfo = async (req: Request, res: Response) => {
+      try{
+        const retour = await myDataSource.getRepository(Usager)
+        .createQueryBuilder("u")
+        .select("COUNT(u.id) AS nombre")
+        .innerJoinAndSelect("u.parcelles","parcelle")
+        .getRawOne();
+
+        const usagerNonActif  = await myDataSource.getRepository(Usager)
+        .createQueryBuilder("u")
+        .select("COUNT(u.id) AS nombre")
+        .leftJoinAndSelect("u.parcelles","parcelle")
+        .where("parcelle.id IS NULL")
+        .getRawOne();
+        const message = "Liste des parcelle par statut";
+        return success(res, 200, [{statut:"Actif", nombre:retour.nombre},{statut:"Inactif", nombre:usagerNonActif.nombre}], message);
+      }catch (error) {
+        res.status(500).json({ message: error.message });
+      }
+    
+}

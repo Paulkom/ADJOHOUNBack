@@ -18,7 +18,7 @@ export class Quartier{
     libelle:string
 
     @ManyToOne(() => Arrondissement, (arrondissement) => arrondissement.quartiers)
-    public arrondissement: Arrondissement
+    arrondissement: Arrondissement
 
     @OneToMany(()=>Parcelle, parcelle => parcelle.village)
     parcelles:Parcelle[];

@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { listen } from '../../../configs/uploads';
-import { createUsager, deleteUsager, getAllUsager, getAllUsagers, getUsager, getUsagerBykey, getUsagerByNpi, updateUsager } from '../controller/usager.controller';
+import { createUsager, deleteUsager, getAllUsager, getAllUsagers, getUsager, getUsagerBykey, getUsagerByNpi, updateUsager, usagerInfo } from '../controller/usager.controller';
 import { checkPermission } from '../../../middlewares/auth.middleware';
 
 export const usagers_routes = (router: express.Router) => {
@@ -20,4 +20,5 @@ export const usagers_routes = (router: express.Router) => {
     { name: "urlImage", maxCount: 1 },
     { name: "autreFichier[]", maxCount: 500 }
   ]),checkPermission('UpdateUsager'), updateUsager);
+  router.get("/api/statistiques/usager/infos",usagerInfo);
 };

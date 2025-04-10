@@ -66,12 +66,11 @@ export const getParcelles = async (req: Request, res: Response) => {
       .leftJoinAndSelect('parcelle.propretaire', 'propretaire')
       .leftJoinAndSelect('quartier.arrondissement', 'arrondissement')
       .leftJoinAndSelect('arrondissement.commune', 'commune')
-
       if(req.body.motCle && req.body.motCle !== ''){
         reque = reque.where('(parcelle.numeroDossier LIKE :motCle OR parcelle.numeroParcelle LIKE :motCle OR parcelle.superficie LIKE :motCle OR parcelle.usager.nom LIKE :motCle OR parcelle.usager.prenom LIKE :motCle OR parcelle.usager.numtel LIKE :motCle OR parcelle.usager.email LIKE :motCle OR quartier.libelle LIKE :motCle OR arrondissement.libelle LIKE :motCle OR commune.libelle LIKE :motCle)', { motCle: `%${motCle}%` })
       }
-      const parcelles = await reque.skip((page - 1) * limit).take(limit).getMany();
       const total = await reque.getCount();
+      const parcelles = await reque.skip((page - 1) * limit).take(limit).getMany();
     const message = 'Liste des parcelles';
     return success(res, 200, parcelles, message);
   } catch (error) {
@@ -144,3 +143,48 @@ export const deleteParcelle = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const parcelleAnne = async (req: Request, res: Response) =>{
+  try{
+    const retour = await myDataSource.getRepository(Parcelle)
+    .createQueryBuilder("p")
+    .select("YEAR(p.createdAt) AS annnee, COUNT(p.id) AS nombre")
+    .groupBy("YEAR(p.createdAt)")
+    .getRawMany();
+    const message = "Liste des parcelle par an";
+    return success(res, 200, retour, message);
+  }catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+export const dixDernieresParcelles = async (req: Request, res: Response) =>{
+  try{
+    const retour = await myDataSource.getRepository(Parcelle)
+    .createQueryBuilder("p")
+    .leftJoinAndSelect("p.village","village")
+    .leftJoinAndSelect("village.arrondissement","arrondissement")
+    .leftJoinAndSelect("p.proprietaire","proprietaire")
+    .orderBy("p.id", "DESC")
+    .limit(10)
+    .getMany();
+    const message = "Liste des dix dernières parcelles";
+    return success(res, 200, retour, message);
+  }catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+export const parcelleParStatut = async (req: Request, res: Response) =>{
+  try{
+    const retour = await myDataSource.getRepository(Parcelle)
+    .createQueryBuilder("p")
+    .select("p.etatParcelle AS statut, COUNT(p.id) AS nombre")
+    .groupBy("p.etatParcelle")
+    .getRawMany();
+    const message = "Liste des parcelle par statut";
+    return success(res, 200, retour, message);
+  }catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
