@@ -21,7 +21,7 @@ export class Arrondissement{
     quartiers:Quartier[]
 
     @ManyToOne(() => Commune, (commune) => commune.arrondissements)
-    public commune: Commune
+    commune: Commune
 
     @ManyToOne(()=>User)
     userCreation:User

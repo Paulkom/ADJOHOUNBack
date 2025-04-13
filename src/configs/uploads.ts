@@ -33,9 +33,9 @@ const storage = multer.diskStorage({
   },
 });
 
-const storageMarche = multer.diskStorage({
+const storageParcelle = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/Marches/');
+    cb(null, 'uploads/Parcelles/');
   },
   filename: function (req, file, cb) {
     console.log("TYYTRTY ===> ", req["files"])
@@ -89,8 +89,8 @@ export const listen = multer({
     fileFilter: fileFilter
 });
 
-export const uploadMarche = multer({
-  storage: storageMarche,
+export const uploadParcelle = multer({
+  storage: storageParcelle,
   limits: {
     fileSize: 1024 * 1024 * 115 //5Mo
   },
