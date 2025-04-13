@@ -10,7 +10,10 @@ export  const parcelleRouter =  (router: express.Router) => {
   router.post('/api/all/parcelles', getlesParcelles);
   router.get('/api/parcelles/:id', getParcelleById);
   router.delete('/api/parcelles/:id',deleteParcelle);
-  router.put('/api/parcelles/:id', updateParcelle);
+  router.put('/api/parcelles/:id',uploadParcelle.fields([
+    { name: "pieceFile", maxCount: 1 },
+    { name: "autreFichier[]", maxCount: 500 }
+  ]), updateParcelle);
   router.get('/api/recuperation/parcelle', recupererListeParcelles);
   router.get("/api/statistique/parcelle/an",parcelleAnne)
   router.get('/api/dix/dernieres/parcelles', dixDernieresParcelles);

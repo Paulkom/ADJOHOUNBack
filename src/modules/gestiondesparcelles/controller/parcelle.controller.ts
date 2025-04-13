@@ -134,9 +134,31 @@ export const updateParcelle = async (req: Request, res: Response) => {
   try {
     const parcelleRepository = myDataSource.getRepository(Parcelle);
     const parcelle = await parcelleRepository.findOneBy({ id: parseInt(req.params.id) });
+
+
     if (!parcelle) {
       return res.status(404).json({ message: 'Parcelle non trouvée' });
     }
+
+    var proprio = null;
+    var laParcelle = null;
+
+    const propioExist = await myDataSource.getRepository(Usager).findOne({ where: { npi: req.body.cipProprietaire } });
+
+    if (!propioExist) {
+      const proprietaire = await myDataSource.getRepository(Usager).save({
+        nom: req.body.nomProprietaire,
+        npi: req.body.cipProprietaire ? req.body.cipProprietaire : null,
+        prenom: req.body.prenomsProprietaire,
+        numtel: req.body.telephoneProprietaire,
+      });
+      proprio = isArray(proprietaire) ? proprietaire[0] : proprietaire;
+    } else {
+      proprio = propioExist;
+    }
+
+    req.body["proprietaire"] = proprio;
+
     parcelleRepository.merge(parcelle, req.body);
     const errors = await validate(parcelle);
     if (errors.length > 0) {
